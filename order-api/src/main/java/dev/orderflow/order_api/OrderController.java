@@ -25,7 +25,7 @@ public class OrderController {
         this.rabbitTemplate = rabbitTemplate;
     }
 
-    public record CreateOrderRequest(@NotBlank String customer, @NotBlank @Pattern(regexp = "\\\\d{12,13}",
+    public record CreateOrderRequest(@NotBlank String customer, @NotBlank @Pattern(regexp = "\\d{12,13}",
             message ="use DDI+DDD+número, só dígitos (ex.: 5511999999999)") String phone,
                                      @NotNull @DecimalMin("0.01") BigDecimal amount){}
 

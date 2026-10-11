@@ -44,7 +44,7 @@ public class EvolutionClient {
 
     public void sendText(String number, String text) {
         http.post()
-                .uri("/message/sendText/{instance}")
+                .uri("/message/sendText/{instance}", instance)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(Map.of("number",number, "text", text))
                 .retrieve()
