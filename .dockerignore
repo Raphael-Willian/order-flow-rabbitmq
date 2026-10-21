@@ -1,6 +1,4 @@
-@"
 **/target
 .git
 .idea
 .env
-"@ | Set-Content .dockerignore
