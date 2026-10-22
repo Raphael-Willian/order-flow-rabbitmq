@@ -43,14 +43,18 @@ public class EvolutionClient {
     }
 
     public void sendText(String number, String text) {
-        http.post()
-                .uri("/message/sendText/{instance}", instance)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(Map.of("number",number, "text", text))
-                .retrieve()
-                .toBodilessEntity();
+        try {
+            http.post()
+                    .uri("/message/sendText/{instance}", instance)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(Map.of("number", number, "text", text))
+                    .retrieve()
+                    .toBodilessEntity();
 
-        log.info("Evolution API: mensagem enviada para {}", number);
+            log.info("Evolution API: mensagem enviada para {}", number);
+        } catch (Exception ex) {
+            log.error("Evolution API: falha ao enviar mensagem para {}: {}", number, ex.getMessage(), ex);
+        }
     }
 
 

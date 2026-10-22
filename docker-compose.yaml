@@ -86,6 +86,10 @@ services:
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_USER: ${RABBITMQ_USER}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      PAYMENT_PROVIDER: ${PAYMENT_PROVIDER}
+      MERCADO_PAGO_BASE_URL: ${MERCADO_PAGO_BASE_URL:-https://api.mercadopago.com}
+      MERCADO_PAGO_ACCESS_TOKEN: ${MERCADO_PAGO_ACCESS_TOKEN}
+      MERCADO_PAGO_CHECKOUT_MODE: ${MERCADO_PAGO_CHECKOUT_MODE}
     depends_on:
       rabbitmq:
         condition: service_healthy
