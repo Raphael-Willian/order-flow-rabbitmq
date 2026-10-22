@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: order-api
+    server-port: 8080
+
+  rabbitmq:
+    host: ${RABBITMQ_HOST}
+    port: 5672
+    username: ${RABBITMQ_USER}
+    password: ${RABBITMQ_PASSWORD}

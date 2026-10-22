@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: payment-worker
+
+  rabbitmq:
+    host: ${RABBITMQ_HOST}
+    port: 5672
+    username: ${RABBITMQ_USER}
+    password: ${RABBITMQ_PASSWORD}
+
+    listener:
+      simple:
+        prefetch: 1
+        default-requeue-rejected: false
+        retry:
+          enable: true
+          max-retries: 2
+          initial-interval: 1s
+          multiplier: 2
+
+payment:
+  provider: ${PAYMENT_PROVIDER}
+
+  mercadopago:
+    base-url: ${MERCADO_PAGO_BASE_URL}
+    access-token: ${MERCADO_PAGO_ACCESS_TOKEN}
+    checkout-mode: ${MERCADO_PAGO_CHECKOUT_MODE}

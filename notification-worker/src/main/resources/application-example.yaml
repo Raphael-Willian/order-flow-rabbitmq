@@ -1,0 +1,26 @@
+spring:
+  main:
+    web-application-type: none
+  application:
+    name: notification-worker
+
+  rabbitmq:
+    host: ${RABBITMQ_HOST}
+    port: 5672
+    username: ${RABBITMQ_USER}
+    password: ${RABBITMQ_PASSWORD}
+
+    listener:
+      simple:
+        prefetch: 1
+        default-requeue-rejected: false
+        retry:
+          enable: true
+          max-retries: 3
+          initial-interval: 2s
+          multiplier: 2
+
+evolution:
+  base-url: ${EVOLUTION_BASE_URL}
+  api-key: ${EVOLUTION_API_KEY}
+  instance: ${EVOLUTION_INSTANCE}
