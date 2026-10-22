@@ -51,7 +51,7 @@ O **OrderFlow** simula o back-end de uma loja. A API recebe o pedido e responde 
 Tudo sobe com um único `docker compose up`, inclusive a Evolution API (WhatsApp), com PostgreSQL e Redis.
 
 > [!NOTE]
-> O gateway de pagamento é **simulado** (latência e regra de recusa fixas). O envio de WhatsApp é **real**, via Evolution API.
+> O gateway de pagamento suporta dois modos: **simulado** (`mock`, com latência e regra de recusa fixas) e **real** (`mercadopago`, integração com o Mercado Pago via `PaymentGatewayFactory`). O envio de WhatsApp é **real**, via Evolution API.
 
 ## Destaques
 
@@ -174,7 +174,10 @@ orderflow/
 └── pom.xml                 # POM pai (multi-módulo)
 ```
 
-## Como executar
+## Front de retorno (estático)
+
+O projeto inclui um front estático, disponibilizado separadamente e **não versionado neste repositório**, com o único propósito de atender às `back_urls` do Mercado Pago (`/success`, `/failure`, `/pending`). Ele é entregue ao navegador do comprador após o checkout e **não se comunica dinamicamente com o backend**: não consome APIs, não expõe rotas internas, não guarda access tokens e não lida com dados sensíveis. Sua função é exclusivamente exibir o retorno visual da transação, sendo a validação definitiva do pagamento feita exclusivamente no backend via webhook do Mercado Pago.
+
 
 ### Pré-requisitos
 
@@ -346,6 +349,9 @@ docker compose start notification-worker
 | `EVOLUTION_API_KEY` | Evolution API e `notification-worker` | Chave global enviada no header `apikey` |
 | `EVOLUTION_DB_PASSWORD` | Evolution API e PostgreSQL | Senha do banco da Evolution (**apenas letras e números**, pois vai dentro de uma URL) |
 | `EVOLUTION_INSTANCE` | `notification-worker` | Nome da instância do WhatsApp usada no envio |
+| `MERCADO_PAGO_ACCESS_TOKEN` | `payment-worker` | Token de acesso do Mercado Pago (obrigatório se `PAYMENT_PROVIDER=mercadopago`) |
+| `MERCADO_PAGO_BASE_URL` | `payment-worker` | URL base da API do Mercado Pago (padrão: `https://api.mercadopago.com`) |
+| `MERCADO_PAGO_CHECKOUT_MODE` | `payment-worker` | Modo do checkout: `redirect` ou `modal` (padrão: `redirect`) |
 
 Também são definidas pelo `docker-compose.yml`: `RABBITMQ_HOST` (`rabbitmq`) e `EVOLUTION_BASE_URL` (`http://evolution-api:8080`).
 
@@ -378,6 +384,7 @@ Também são definidas pelo `docker-compose.yml`: `RABBITMQ_HOST` (`rabbitmq`) e
 - **`prefetch=1`:** troca throughput por distribuição justa, o que é adequado para tarefas lentas e de duração variável.
 - **Contrato em `common`:** records compartilhados dão tipagem forte, ao custo de acoplar os serviços por biblioteca. Em um cenário maior, entraria um schema registry ou contratos versionados.
 - **Timeouts explícitos no cliente HTTP:** nenhuma chamada externa pode prender um consumidor indefinidamente.
+- **Gateway de pagamento intercambiável:** o `PaymentGatewayFactory` abstrai a criação de pagamento, permitindo alternar entre provedor simulado (`mock`) e Mercado Pago (`mercadopago`) apenas por variável de ambiente, sem alterar o consumidor nem expor credenciais ao front.
 - **Segredos fora do repositório:** `.env` ignorado pelo Git e `.env.example` como modelo.
 
 ## Limitações e próximos passos
@@ -388,6 +395,7 @@ Limitações conhecidas, assumidas por escopo:
 - **Erros `4xx` da Evolution também são retentados**, embora fosse mais correto enviá-los direto para a DLQ.
 - **Reprocessamento da DLQ é manual.**
 - **Sem persistência de pedidos:** os eventos trafegam apenas pelo broker.
+- **Checkout do Mercado Pago não finalizado:** a criação de preferência funciona, mas o redirecionamento do cliente para o checkout depende de ponte front-back ainda não implementada, e a confirmação oficial via webhook (`notification_url`) ainda aponta para DNS interno do Docker, sem endpoint público no `order-api`.
 
 Próximos passos:
 
@@ -399,6 +407,8 @@ Próximos passos:
 - [ ] Testes de integração com Testcontainers (RabbitMQ)
 - [ ] Observabilidade: Actuator, Micrometer, Prometheus e Grafana
 - [ ] Pipeline de CI no GitHub Actions
+- [ ] Ponte front-back para entrega da `checkoutUrl` e redirecionamento do cliente
+- [ ] Endpoint público de webhook no `order-api` para confirmação oficial do Mercado Pago
 
 ## Solução de problemas
 
